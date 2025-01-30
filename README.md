@@ -52,7 +52,7 @@ The major steps to prepare a SWAT-LC simulation include:
    ```
 
    <div align="center">
-   <img src="pics\ModelRun.png" alt="ModelRun" style="zoom: 67%;" width="500" />
+   <img src="pics\ModelRun.png" alt="ModelRun" style="zoom: 67%;" width="600" />
    </div>
 
 4. Use the "resultreader.py" to convert the SWAT-LC results into WASP8 external database.
