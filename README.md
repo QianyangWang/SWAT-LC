@@ -5,19 +5,19 @@
 ## Introduction
 
 Characterized by complex behaviors in the environment, the mechanism-based simulation of Polycyclic Aromatic Compounds (PACs) at a basin scale presents significant challenges, underscoring the need for more accessible tools. This code repository introduces a Python extension called “SWAT-LC,” designed specifically based on the SWAT hydrologic model architecture for this purpose. SWAT-LC describes the terrestrial fate and transport processes of PACs for each Hydrological Response Unit (HRU) and sub-basin through a series of build-up, wash-off, partitioning, and decay equations. Using the PACs load calculated by SWAT-LC in conjunction with flow generation simulation results from SWAT, the concentration of PACs in the river can then be modeled using WASP8. Leveraging this extension alongside the SWAT2WASP toolkit (https://github.com/QianyangWang/SWAT2WASP), users can establish a more integrated SWAT—SWAT-LC—WASP8 modeling framework with greater ease. This code repository is a part of the work presented in the paper entitled “Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin: Integrated Models and Insights”. The architecture of the SWAT—SWAT-LC—WASP8 modeling framework is as follows:
-
+<div align="center">
 <img src="pics\ModelStructure.jpg" alt="ModelStructure" style="zoom: 50%;" width="400" />
-
+</div>
 The SWAT-LC model reads the input variables (HRU and river features, HRU water yield time series, etc.) from an existing SWAT simulation project folder, and then simulates the PACs for each HRU. Subsequently, it calculates the summation of the HRU pollutant loads for each sub-catchment. Functionalities can subsequently be used to convert the SWAT-LC output into WASP8 external database, which can be used as the input for WASP8 in-stream fate and transport modelling.
-
+<div align="center">
 <img src="pics\ModelStructure2.jpg" alt="ModelStructure2" style="zoom:67%;" />
-
+</div>
 ## Major Governing Processes
 
 SWAT-LC incorporates four primary storage layers: surface storage, soil storage, shallow groundwater storage, and deep groundwater storage. In each independent Hydrological Response Unit (HRU), the concentration of PACs is assumed to be homogeneously distributed across these layers. In the surface layer, PACs can accumulate during dry periods. Conversely, during wet days, wash-off processes occur, leading to the movement of PACs. This flux is divided into horizontal wash-off—where PACs move with surface runoff into the river—and vertical wash-off—where PACs leach into the soil layer. Within the soil layer, three-phase partitioning equations (Du et al. 2019; Han et al. 2022) are employed to calculate the concentration of PACs in dissolved, solid, and DOC-adsorbed phases. PACs can then either migrate to the river through lateral flow or infiltrate into the aquifer via percolation. In the groundwater storage layer, PACs can contribute to riverine flows through baseflow, further influencing their concentration in surface waters.
-
-<img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" />
-
+<div align="center">
+<img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
+</div>
 ## Usage
 
 The major steps to prepare a SWAT-LC simulation include:
