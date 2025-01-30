@@ -12,12 +12,14 @@ The SWAT-LC model reads the input variables (HRU and river features, HRU water y
 <div align="center">
 <img src="pics\ModelStructure2.jpg" alt="ModelStructure2" style="zoom:67%;" />
 </div>
+
 ## Major Governing Processes
 
 SWAT-LC incorporates four primary storage layers: surface storage, soil storage, shallow groundwater storage, and deep groundwater storage. In each independent Hydrological Response Unit (HRU), the concentration of PACs is assumed to be homogeneously distributed across these layers. In the surface layer, PACs can accumulate during dry periods. Conversely, during wet days, wash-off processes occur, leading to the movement of PACs. This flux is divided into horizontal wash-off—where PACs move with surface runoff into the river—and vertical wash-off—where PACs leach into the soil layer. Within the soil layer, three-phase partitioning equations (Du et al. 2019; Han et al. 2022) are employed to calculate the concentration of PACs in dissolved, solid, and DOC-adsorbed phases. PACs can then either migrate to the river through lateral flow or infiltrate into the aquifer via percolation. In the groundwater storage layer, PACs can contribute to riverine flows through baseflow, further influencing their concentration in surface waters.
 <div align="center">
 <img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
 </div>
+
 ## Usage
 
 The major steps to prepare a SWAT-LC simulation include:
