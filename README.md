@@ -44,8 +44,8 @@ The major steps to prepare a SWAT-LC simulation include:
 
    ```python
    if __name__ == "__main__": 	
-       # SWAT-LC project folder
-       lcpath = os.path.split(os.path.abspath(__file__))[0]
+      # SWAT-LC project folder -> for the example project "file_templates" is the SWAT-LC project folder
+      lcpath = os.path.split(os.path.abspath(__file__))[0]
     	# SWAT model folder
     	s = Simulation(r"D:\AthaSWAT\swat1522",lcpath) # class Simulation in the main.py
    	s.run()
