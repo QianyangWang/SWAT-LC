@@ -5,7 +5,7 @@
 This file has a format with a title followed by several simulation settings:
 
 <div align="center">
-![simsettings](pics/simsettings.png)
+<img src="pics\simsettings.png" alt="simsettings" style="zoom:67%;" />
 </div>
 
 The meaning and format of these settings are:
