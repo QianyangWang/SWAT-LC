@@ -77,31 +77,53 @@ class Simulation:
                         --The quantity into the surface runoff can be determined by the overall conc. and the surface runoff. If the rainfall event does
                           not generate the surface runoff, then all the wash-off load will go into the soil layer.
                         """
-                        oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
-                        oriaccu = decay(oriaccu,pollutant.dsoil)
+
+                        if hru.usrlu[pollutant.name]:
+                            # the user defined LU settings have higher priority
+                            bmax = hru.bmax[pollutant.name]
+                            kbu = hru.kbu[pollutant.name]
+                            nbu = hru.nbu[pollutant.name]
+                        else:
+                            bmax = self.mdl_struct.lu[hru.lu].bmax[pollutant.name]
+                            kbu = self.mdl_struct.lu[hru.lu].kbu[pollutant.name]
+                            nbu = self.mdl_struct.lu[hru.lu].nbu[pollutant.name]
+
                         if wat == 0:
-                            # 1. Build-up Calculation (dry deposition & biogeochemical process), occurred only on dry days
-                            if hru.usrlu[pollutant.name]:
-                                # the user defined LU settings have higher priority
-                                bmax = hru.bmax[pollutant.name]
-                                kbu = hru.kbu[pollutant.name]
-                                nbu = hru.nbu[pollutant.name]
+                            # 1. Dry days, build-up
+                            if self.mdl_struct.bumth == surface.sat_build_up:
+                                # saturation build-up -> does not need antecedent dry days, decay considered
+                                oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
+                                oriaccu = decay(oriaccu, pollutant.dsoil)
+                                mpa = self.mdl_struct.bumth(bmax, kbu, oriaccu)
                             else:
-                                bmax = self.mdl_struct.lu[hru.lu].bmax[pollutant.name]
-                                kbu = self.mdl_struct.lu[hru.lu].kbu[pollutant.name]
-                                nbu = self.mdl_struct.lu[hru.lu].nbu[pollutant.name]
-                            if self.mdl_struct.bumth == surface.power_build_up:
-                                mpa = self.mdl_struct.bumth(bmax, kbu, nbu, oriaccu)        # power build-up, mpa: mass per unit area, kg/km2
-                            else:
-                                mpa = self.mdl_struct.bumth(bmax, kbu, oriaccu)             # saturation build-up
+                                # exp, pow, half-sat build-up -> need antecedent dry days, decay not considered
+                                hru.stvars[pollutant.name].drydays += 1
+                                oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
+                                mpa = oriaccu # exp, half-sat method, decay not considered, mass will be added on wet day
                             mhrmv = 0
                             csrmv = 0
                             soilin = 0
                         else:
-                            # 1. Wet days, no build-up
-                            mpa = oriaccu
-                            # 2. Mass (per unit area) of the pollutant in the generated surface runoff due to wet deposition
+                            if self.mdl_struct.bumth == surface.sat_build_up:
+                                # 1. Wet days, no build-up for sat build-up
+                                oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
+                                oriaccu = decay(oriaccu, pollutant.dsoil)
+                                mpa = oriaccu
+                            else:
+                                # 1. Wet days, add the dry days build-up for exp, pow, half-sat methods
+                                if hru.stvars[pollutant.name].drydays != 0:
+                                    oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
+                                    # power, exp, half-sat build-up, mpa: mass per unit area, kg/km2
+                                    if self.mdl_struct.bumth == surface.power_build_up:
+                                        mpa = self.mdl_struct.bumth(bmax, kbu, nbu, oriaccu,hru.stvars[pollutant.name].drydays)
+                                    else:
+                                        mpa = self.mdl_struct.bumth(bmax, kbu, oriaccu,hru.stvars[pollutant.name].drydays)
+                                else:
+                                    oriaccu = hru.stvars[pollutant.name].maccu / hru.area  # kg/km2
+                                    mpa = oriaccu
+                                hru.stvars[pollutant.name].drydays = 0
 
+                            # 2. Mass (per unit area) of the pollutant in the generated surface runoff due to wet deposition
                             if sub.usrflux[pollutant.name]:
                                 mrainh = surq * 10 ** 6 * sub.cprep[pollutant.name] / 10 ** 12      # mm * km2 * 10**6 -> L  cprep: ng/L/10**12 -> kg/L  mrain:kg/HRU.AREA
                                 mrainv = (wat - surq) * 10 ** 6 * sub.cprep[pollutant.name] / 10 ** 12
@@ -127,8 +149,8 @@ class Simulation:
                                 mpa, mwov = self.mdl_struct.womth(mpa, kwov, wat - surq)         # for Q-driven exponential_wash_off_q
                                 mpa, mwoh = self.mdl_struct.womth(mpa, kwoh, surq)
                             else:
-                                mpa, mwov = self.mdl_struct.womth(mpa, kwov, wat - surq, nwov)   # rating curve -> removed mass related to the rain intensity
-                                mpa, mwoh = self.mdl_struct.womth(mpa, kwoh, surq, nwoh)         # rating curve -> removed mass related to the rain intensity
+                                mpa, mwov = self.mdl_struct.womth(mpa, kwov, wat - surq, nwov)   # rating curve -> removed mass directly related to the runoff intensity
+                                mpa, mwoh = self.mdl_struct.womth(mpa, kwoh, surq, nwoh)         # rating curve -> removed mass directly related to the runoff intensity
                             # 4. Mass Re-distribution
                             mhrmv = (mrainh + mwoh) * hru.area
                             if surq != 0:

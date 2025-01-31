@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import datetime
 from wqutils import PAH,DOC,Landuse,Soil
-from surface import power_build_up, exp_build_up, sat_build_up
-from surface import exponential_wash_off,rating_curve_wash_off
+from surface import power_build_up, exp_build_up, sat_build_up, half_sat_build_up
+from surface import exponential_wash_off,rating_curve_wash_off,exponential_wash_off_q
 
 
 class PROJmanager:
@@ -59,8 +59,8 @@ class PROJmanager:
 
     def scan_lc_settings(self):
         print("Loading SWAT_LC pollutant parameters...")
-        budict = {0:power_build_up, 1:exp_build_up, 2:sat_build_up}
-        wodict = {0:exponential_wash_off,1:rating_curve_wash_off}
+        budict = {0:power_build_up, 1:exp_build_up, 2:sat_build_up,3:half_sat_build_up}
+        wodict = {0:exponential_wash_off,1:exponential_wash_off_q,2:rating_curve_wash_off}
         flist = glob.glob(self.lcdir + "\*.sim")
         if len(flist) > 1:
             raise RuntimeError("There are more than 1 global setting files in the project folder.")
@@ -596,6 +596,7 @@ class StateVariables:
         self.csaq = 0       # Pollutant concentration in the shallow aquifer (ng/L)
         self.cdaq = 0       # Pollutant concentration in the deep aquifer (ng/L)
         self.cw = 0         # Pollutant concentration in the soil water (cw * theta = cdsoil, mg/L)
+        self.drydays = 0    # dry days for mass accumulation
 
         # Output variables
         self.out_msurf = 0  # Mass in the surface runoff to the river channel (DOC:kg, PAH:mg)

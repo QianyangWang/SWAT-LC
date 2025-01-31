@@ -8,12 +8,12 @@ Load calc.: wash-off
 """
 
 
-def power_build_up(bmax,k,n,accum,dt=1):
+def power_build_up(bmax,k,n,accum,dt):
     """
     Power build-up
     :param bmax: max build-up (kg/km3)
     :param k:
-    :param dt:
+    :param dt: dry days
     :param n:
     :param accum:
     :return:
@@ -23,12 +23,12 @@ def power_build_up(bmax,k,n,accum,dt=1):
     return min(bmax,accum)
 
 
-def exp_build_up(bmax,k,n,accum,dt=1):
+def exp_build_up(bmax,k,accum,dt):
     """
     Exponential build-up
     :param bmax: max build-up (kg/km3)
     :param k:
-    :param dt:
+    :param dt:  dry days
     :return:
     """
     b = bmax * (1 - np.exp(-k * dt))
@@ -36,18 +36,29 @@ def exp_build_up(bmax,k,n,accum,dt=1):
     return min(bmax,accum)
 
 
-def sat_build_up(bmax,k,accum,dt=1):
+def sat_build_up(bmax,k,accum):
     """
-    Saturation build-up--constant accumulation rate -> not the half-saturation version
+    Saturation build-up--constant accumulation rate -> not the half-saturation version, add 1 to avoid 0 values
     :param bmax: max build-up (kg/km3)
     :param k:
-    :param dt:
     :return:
     """
-    b = bmax * dt / (k + dt)
+    b = bmax * 1/ (k + 1)
     accum += b
     return min(bmax,accum)
 
+
+def half_sat_build_up(bmax,k,accum,dt):
+    """
+    Half saturation build-up -> SWMM version
+    :param bmax: max build-up (kg/km3)
+    :param k:
+    :param dt: dry days
+    :return:
+    """
+    b = bmax * dt/ (k + dt)
+    accum += b
+    return min(bmax,accum)
 
 
 def exponential_wash_off(m,k,dt=1):
