@@ -4,7 +4,9 @@
 
 This file has a format with a title followed by several simulation settings:
 
+<div align="center">
 ![simsettings](pics/simsettings.png)
+</div>
 
 The meaning and format of these settings are:
 
