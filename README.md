@@ -20,6 +20,10 @@ SWAT-LC incorporates four primary storage layers: surface storage, soil storage,
 <img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
 </div>
 
+## Dependencies
+
+Numpy and Pandas
+
 ## Usage
 
 The major steps to prepare a SWAT-LC simulation include:
