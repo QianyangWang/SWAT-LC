@@ -77,6 +77,6 @@ The major steps to prepare a SWAT-LC simulation include:
 1. Du, X., Shrestha, N.K., Wang, J., 2019. Integrating organic chemical simulation module into SWAT model with application for PAHs simulation in Athabasca oil sands region, Western Canada. Environmental Modelling & Software 111 (4), 432–443.
 2. Han, Y., Du, X., Farjad, B., Goss, G., Gupta, A., Faramarzi, M., 2022. A numerical modeling framework for simulating the key in-stream fate processes of PAH decay in Muskeg River Watershed, Alberta, Canada. The Science of the total environment 848, 157246.
 
-## How to cite
+## How to Cite
 
 Wang, Q., Arlos, M., Wang, J., and Hicks, K.: Integrated Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin, EGU General Assembly 2025, Vienna, Austria, 27 Apr–2 May 2025, EGU25-10736, https://doi.org/10.5194/egusphere-egu25-10736, 2025.
