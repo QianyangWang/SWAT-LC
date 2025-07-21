@@ -24,7 +24,7 @@ Specifically for the Athabasca oilsands region, in which the petrogenic source i
 
 ## Dependencies
 
-Numpy and Pandas
+Numpy, Pandas, and sqlalchemy & mysql (optional)
 
 ## Usage
 
