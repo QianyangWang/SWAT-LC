@@ -40,7 +40,6 @@ class LCreader:
     def toWASP8dbMySQL(self, db_config=None):
         """
         :param db_config:
-                db_config: 数据库配置字典，格式:
             {
                 'host': 'localhost',
                 'user': 'username',
