@@ -482,6 +482,8 @@ class Simulation:
 
 
 if __name__ == "__main__":
+    # This is a template file for Chrysene and Naphthalene simulation
+    # The SWAT model for testing purpose is available at https://zenodo.org/records/16289087
     lcpath = os.path.split(os.path.abspath(__file__))[0]
     s = Simulation(r"AthacascaSWAT",lcpath)
     s.run()
