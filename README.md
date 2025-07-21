@@ -75,6 +75,9 @@ The major steps to prepare a SWAT-LC simulation include:
    lc.toWASP8db(path=r"D:\SWAT2WASP\SWATLC_WASPDB.xlsx")
    ```
 
+## SWAT Example
+The Athabasca River SWAT model for the testing purpose can be found at https://zenodo.org/records/16289087
+
 ## Reference
 
 1. Du, X., Shrestha, N.K., Wang, J., 2019. Integrating organic chemical simulation module into SWAT model with application for PAHs simulation in Athabasca oil sands region, Western Canada. Environmental Modelling & Software 111 (4), 432–443.
