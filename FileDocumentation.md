@@ -76,6 +76,21 @@ This file is used to set the initial concentration (total mass/total soil volume
 | POLLUTANT   | str    | -    | Pollutant name. (Mandatory)                        |
 | ctsoil      | float  | ng/L | Total concentration in the soil layer.             |
 
+## 6. Outcrop Erosion Setting File (*.ocp)
+
+This file is used to set the outcrop erosion equation parameters. It has a txt format (comma separated) with several columns.
+
+| Column Name | Format | Unit | Description                                        |
+| ----------- | ------ | ---- | -------------------------------------------------- |
+| RCH         | int    | -    | River channel code in SWAT model.                  |
+| COCP        | float  | -    | Outcrop count coefficient/constant.                |
+| POLLUTANT   | str    | -    | Pollutant name.                                    |
+| KOCP        | float  | -    | Erosion intensity coefficient.                     |
+| NOCP        | float  | -    | Erosion intensity exponent.                        |
+| QWCR        | float  | m^2/s| Critical water flux.                               |
+| EA          | float  | J/(mol·K)| Activation energy for specific PAC.                |
+| T0          | float  | K    | Reference temperature.                             |
+
 ## 6. Soil-Land Use Conflict Setting File (*.conflict, Optional)
 
 This file is an optional setting file to inform the model of the potential conflicts between the SWAT soil map and land use data. For example, if the soil map has a "Water Body" type, while the land use map has a different type on the same location due to the differences (resolution etc.) between the data sources. This conflict caused by the water body may cause calculation mistakes. Therefore, we provide this file to reset the patches with conflicts. It has a txt format (comma separated) with four columns.
