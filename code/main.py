@@ -483,5 +483,5 @@ class Simulation:
 
 if __name__ == "__main__":
     lcpath = os.path.split(os.path.abspath(__file__))[0]
-    s = Simulation(r"D:\SWATcalibration\process_swat2022",lcpath)
+    s = Simulation(r"AthacascaSWAT",lcpath)
     s.run()
