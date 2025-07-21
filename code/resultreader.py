@@ -1,8 +1,8 @@
 # Author: Qianyang Wang
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
-
+import mysql.connector
+from sqlalchemy import create_engine
 
 
 class LCreader:
@@ -37,7 +37,37 @@ class LCreader:
             else:
                 data.to_excel("SWATLC_WASPDB.xlsx")
 
+    def toWASP8dbMySQL(self, db_config=None):
+        """
+        :param db_config:
+                db_config: 数据库配置字典，格式:
+            {
+                'host': 'localhost',
+                'user': 'username',
+                'password': 'password',
+                'database': 'SWATLC_SSP126_2050s',
+                'table':"chrnap"
+            }
+        :return:
+        """
 
+
+        if not "subout" in self.path:
+            raise NotImplementedError("The current version only accepts the sub-basin output.")
+
+        data = self.metadata.iloc[:, 0:3].copy()
+        data["SUB"] = data["SUB"].map(lambda x: f"Reach{x}")
+        data = data.reset_index()
+        data = data.rename(columns={
+            "DATE":"TIME",
+            "SUB": "STATION",
+            "POLLUTANT": "VARIABLE",
+            "MTkg": "VALUE"
+        })
+        data["TIME"] = pd.to_datetime(data["TIME"]).dt.strftime("%-m/%-d/%Y") #WASP time format
+        engine = create_engine('mysql+pymysql://{}:{}@{}:3306/{}'.format(db_config["user"],db_config["password"],
+                                                                          db_config["host"],db_config["database"]))
+        data.to_sql(db_config["table"], con=engine, if_exists='append', index=False)
 
 
 

@@ -17,6 +17,7 @@ class PROJmanager:
     def __init__(self, swatdir, lcdir):
         self.bumth = None
         self.womth = None
+        self.SWATTmp = None
 
         self.swatdir = swatdir
         os.chdir(self.swatdir)
@@ -41,6 +42,9 @@ class PROJmanager:
         self.set_ini_cond()
         self.scan_usr_lu_params()
         self.scan_usr_flux()
+        self.scan_usr_sol()
+        self.scan_lc_ocp()
+        self.cliptmp()
 
 
     def scan_swat_settings(self):
@@ -108,7 +112,9 @@ class PROJmanager:
             length = rparam.parameters["CH_L2"]     # channel length in km
             area = width * length * 1000            # water surface area in m2
             subobj.watsurf = area
+            subobj.width = width
             self.sublist.append(subobj)
+
 
     def load_swat_result(self):
         print("Loading SWAT simulation results...")
@@ -116,9 +122,16 @@ class PROJmanager:
         reader.read_hru()
         reader2 = SWATreader(self.swatdir)
         reader2.read_sub()
+        reader3 = SWATreader(self.swatdir)
+        reader3.read_rch()
+        reader4 = SWATreader(self.swatdir)
+        tmpdf = reader4.read_TMP()              # read the temperature file, currently using the observed temperature
+        self.SWATTmp = tmpdf
         for s in self.sublist:
             subpcp = reader2.inquireSUB(s.name, "PRECIPmm")
+            rchflow = reader3.inquireRchFlow(s.name)
             s.add_input("PRECIP",subpcp)
+            s.add_input("Flow",rchflow)
             for h in s.hrulist:
                 pcp = reader.inquireHRU(h.id,"PRECIPmm")
                 perc = reader.inquireHRU(h.id,"PERCmm")
@@ -230,6 +243,7 @@ class PROJmanager:
                 row = df[(df["SOIL"]==s) & (df["POLLUTANT"]==p)]
                 obj.fdoc[p] = float(row["fdoc"].values)
                 obj.cbase[p] = float(row["cbase"].values)
+                obj.geoflx[p] = float(row["geoflx"].values)
             self.soils[s] = obj
 
     def check_conflict(self):
@@ -417,6 +431,86 @@ class PROJmanager:
                 for p in self.pollutants:
                     s.usrflux[p.name] = False
 
+    def scan_lc_ocp(self):
+        outcropflist = glob.glob(self.lcdir + "\*.ocp")
+        if len(outcropflist) > 1:
+            raise RuntimeError("There are more than 1 outcrop erosion setting files in the project folder.")
+        if len(outcropflist) == 1:
+            outcrops = outcropflist[0]
+            df = pd.read_csv(outcrops, header=0)
+            subval = df["RCH"].values
+            for s in self.sublist:
+                if s.name in subval:
+                    for p in self.pollutants:
+                        row = df[(df["RCH"] == s.name) & (df["POLLUTANT"] == p.name)]
+                        if len(row.index) == 1:
+                            s.hasoutcrop = True
+                            s.cocp[p.name] = float(row["COCP"].values)
+                            s.kocp[p.name] = float(row["KOCP"].values)
+                            s.nocp[p.name] = float(row["NOCP"].values)
+                            s.qwcr[p.name] = float(row["QWCR"].values)
+                            s.ea[p.name] = float(row["EA"].values)
+                            s.t0[p.name] = float(row["T0"].values)
+
+    def scan_usr_sol(self):
+        usrsolflist = glob.glob(self.lcdir + "\*.usrsol")
+        if len(usrsolflist) > 1:
+            raise RuntimeError("There are more than 1 user-specific soil setting files in the project folder.")
+        if len(usrsolflist) == 1:
+            usrsol = usrsolflist[0]
+            df = pd.read_csv(usrsol, header=0)
+            subdf = df[df["CTLTYPE"] == "SUB"]
+            hrudf = df[df["CTLTYPE"] == "HRU"]
+            subval = subdf["ID"].values
+            hruval = hrudf["ID"].values
+            for s in self.sublist:
+                if s.name in subval:
+                    for p in self.pollutants:
+                        row = subdf[(subdf["ID"] == s.name) & (subdf["POLLUTANT"] == p.name)]
+                        if len(row.index) == 1:  # only valid if there is no conflict
+                            for sh in s.hrulist:
+                                sh.usrsol[p.name] = True
+                                sh.fdoc[p.name] = float(row["fdoc"].values)
+                                sh.cbase[p.name] = float(row["cbase"].values)
+                                sh.geoflux[p.name] = float(row["geoflx"].values)
+
+                        else:
+                            for sh in s.hrulist:
+                                sh.usrsol[p.name] = False
+
+                else:
+                    for sh in s.hrulist:
+                        for p in self.pollutants:
+                            sh.usrsol[p.name] = False
+
+                # overwrite the sub-basin setting using the hru setting
+                for sh in s.hrulist:
+                    if sh.id in hruval:
+                        for p in self.pollutants:
+                            rowadv = hrudf[(hrudf["ID"] == sh.id) & (hrudf["POLLUTANT"] == p.name)]
+                            if len(rowadv.index) == 1:
+                                sh.usrsol[p.name] = True
+                                sh.fdoc[p.name] = float(rowadv["fdoc"].values)
+                                sh.cbase[p.name] = float(rowadv["cbase"].values)
+                                sh.geoflux[p.name] = float(rowadv["geoflx"].values)
+
+        else:
+            for s in self.sublist:
+                for p in self.pollutants:
+                    for sh in s.hrulist:
+                        sh.usrsol[p.name] = False
+
+    def cliptmp(self):
+        start = pd.to_datetime(datetime.date(year=self.settings["IYR"] + self.settings["NYSKIP"], month= 1, day=1) \
+                     + datetime.timedelta(days=self.settings["IDAF"] - 1))
+        end = pd.to_datetime(datetime.date(year=self.settings["IYR"] + self.settings["NBYR"] - 1, month= 1, day=1) \
+                     + datetime.timedelta(days=self.settings["IDAL"] - 1))
+
+        mask = (self.SWATTmp['Date'] >= start) & (self.SWATTmp['Date'] <= end)
+        filtered_df = self.SWATTmp[mask]
+        filtered_df.loc[:,"AvgTmp"] = filtered_df["AvgTmp"].interpolate()
+        self.SWATTmp = np.array(filtered_df["AvgTmp"])
+
 
 
 class SUBBASIN:
@@ -432,6 +526,16 @@ class SUBBASIN:
         self.usrflux = {}
         self.cprep = {}
         self.riverflux = {}
+        self.usrgeoflux = {}
+
+        # outcrop erosion parameters
+        self.hasoutcrop = False
+        self.cocp = {}
+        self.kocp = {}
+        self.nocp = {}
+        self.qwcr = {} # critical flow/width
+        self.ea = {}
+        self.t0 = {}
 
 
     def scan_hru(self,subname,subarea):
@@ -507,7 +611,10 @@ class HRU:
         self.nwov = {}
         self.kwoh = {}
         self.nwoh = {}
-
+        self.usrsol = {}
+        self.fdoc = {}
+        self.cbase = {}
+        self.geoflux = {}
 
     def __repr__(self):
         return f"HRU{self.name}"
@@ -601,9 +708,10 @@ class StateVariables:
         # Output variables
         self.out_msurf = 0  # Mass in the surface runoff to the river channel (DOC:kg, PAH:mg)
         self.out_mlat = 0   # Mass in the lateral flow to the river channel (DOC:kg, PAH:mg)
-        self.out_mgw = 0    # Mass in the ground water flow to the river channel (DOC:kg, PAH:mg)
+        self.out_mgw = 0    # Mass in the groundwater flow to the river channel (DOC:kg, PAH:mg)
         self.out_mdgw = 0
-        self.out_mrchflux = 0  # Mass to the river channel
+        self.out_mrchflux = 0  # Mass to the river channel through deposition
+        self.out_mocp = 0  # outcrop erosion mass
         self.out_mt = 0     # Total mass flow into the reach (kg)
         self.out_concs = 0  # Final concentration in the surface runoff to the reach (ng/L)
         self.out_concl = 0  # Final concentration in the lateral flow to the reach (ng/L)
@@ -618,7 +726,6 @@ class StateVariables:
 
 
 
-"""
-scanner = PROJmanager(r"D:\SWATcalibration\process1",r"D:\SWAT_LC")
-"""
+
+
 

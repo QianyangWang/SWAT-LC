@@ -7,10 +7,9 @@ import datetime
 import pandas as pd
 import surface
 import subsurface
+import outcrop
 from wqutils import decay
 import progressbar
-import matplotlib.pyplot as plt
-
 
 
 class Simulation:
@@ -42,9 +41,39 @@ class Simulation:
         pg = 0
         if self.mdl_struct.screenshow != 0:
             self.pgbar.update(pg)
+        airtmp_ts = self.mdl_struct.SWATTmp  # for outcrop erosion temperature correction
         for id,d in enumerate(self.dateseries):
+            tmp = airtmp_ts[id]
             for sub in self.mdl_struct.sublist:
                 subpcp = sub.input["PRECIP"][id]
+                """
+                0. Channel Outcrops Erosion Process:
+                Incorporate this if the outcrop erosion process is the dominant sources of PACs in the basin. A modified rating curve like equation is used.
+                
+                Reference:
+                Brandon R. Hill, Colin A. Cooke, Alberto V. Reyes, and Murray K. Gingras
+                Environmental Science & Technology Article ASAP
+                DOI: 10.1021/acs.est.5c02074
+                """
+                rchflow = sub.input["Flow"][id]
+                rchwidth = sub.width
+                if sub.hasoutcrop is True:
+                    for pollutant in self.mdl_struct.pollutants:
+                        # DOC simulation does not consider outcrop erosion
+                        if pollutant.name != "DOC":
+                            cocp = sub.cocp[pollutant.name]
+                            kocp = sub.kocp[pollutant.name]
+                            nocp = sub.nocp[pollutant.name]
+                            qwcr = sub.qwcr[pollutant.name]
+                            ea = sub.ea[pollutant.name]
+                            t0 = sub.t0[pollutant.name]
+                            outcropmass = outcrop.washload_equation_m(cocp,kocp,rchflow,rchwidth,nocp,qwcr,ea,t0,tmp)
+                            sub.stvars[pollutant.name].out_mt += outcropmass
+                            sub.stvars[pollutant.name].out_mocp = outcropmass
+                        else:
+                            sub.stvars[pollutant.name].out_mocp = 0
+
+                # land processes
                 for hru in sub.hrulist:
                     pcp = hru.input["PRECIP"][id]
                     smt = hru.input["SNOMELT"][id]
@@ -191,7 +220,10 @@ class Simulation:
                         vswc = (swend + perq + latq) * hru.area * 1000                      # mm * km2 = 1000 m3,
                         #vswc = (swend + perq + latq - revap) * hru.area * 1000             # mm * km2 = 1000 m3,
                         if pollutant.name == "DOC":
-                            fdoc = self.mdl_struct.soils[hru.soiltype].fdoc[pollutant.name]
+                            if hru.usrsol[pollutant.name]:
+                                fdoc = hru.fdoc[pollutant.name]
+                            else:
+                                fdoc = self.mdl_struct.soils[hru.soiltype].fdoc[pollutant.name]
                             if self.mdl_struct.docmth == 0:
                                 csoc = 10**6 * hru.morgc/hru.msolid                         # mg/kg
                                 cdoc = csoc * fdoc                                          # mg/L fdoc -> oc partitioning coeff kg/L (1/L/kg)
@@ -230,7 +262,15 @@ class Simulation:
                                 msoilori = decay(hru.stvars[pollutant.name].msoil,pollutant.dsoil)
                             else:
                                 msoilori = decay(hru.stvars[pollutant.name].msoil, pollutant.dwat)
-                            msoil = soilin + msoilori
+
+                            # geoflux -> leakage from other formations/bitumen layer
+                            if hru.usrsol[pollutant.name]:
+                                geoflux = hru.geoflux[pollutant.name]
+                            else:
+                                geoflux = self.mdl_struct.soils[hru.soiltype].geoflx[pollutant.name] # ug/(m2 year)
+                            geoflxkg = geoflux * hru.area / (365 * 1000)    # ug/(m2 year) * km2 -> ug/(m2 year) * (1000000 m2/ 365) / 1000000000
+
+                            msoil = soilin + msoilori + geoflxkg
                             if vswc != 0:
                                 cswc = 10**9 * msoil/vswc                                   # kg/m3 -> g/L -> 10**9 ng/L
                             else:
@@ -265,7 +305,10 @@ class Simulation:
                         --Well mixed storage.
                         """
                         if pollutant.name == "DOC":
-                            cgw = self.mdl_struct.soils[hru.soiltype].cbase[pollutant.name]
+                            if hru.usrsol[pollutant.name]:
+                                cgw = hru.cbase[pollutant.name]
+                            else:
+                                cgw = self.mdl_struct.soils[hru.soiltype].cbase[pollutant.name]
                             mgwrch = cgw * gwq * hru.area / 10 ** 6                         # ng/L * mm * km2 = ng/L * 1000m3 = mg; mg/10**6 = kg
                             mdgwrch = cgw * dgwq * hru.area / 10 ** 6
                             msarem = 0  # keep the format
@@ -407,7 +450,8 @@ class Simulation:
                                               sub.stvars[pollutant.name].out_mlat,
                                               sub.stvars[pollutant.name].out_mgw,
                                               sub.stvars[pollutant.name].out_mdgw,
-                                              sub.stvars[pollutant.name].out_mrchflux)
+                                              sub.stvars[pollutant.name].out_mrchflux,
+                                              sub.stvars[pollutant.name].out_mocp)
 
                     sub.stvars[pollutant.name].reset0()
 
@@ -426,13 +470,13 @@ class Simulation:
         headers = ",".join(["DATE","SUB","HRU","POLLUTANT","MTkg","MSURkg","MLATkg","MGWkg","MDGWkg","CTng/L","CLATng/L","CGWng/L","CDGWng/L","CTSOILng/L"]) + "\n"
         fhnd.write(headers)
 
-    def write_subrow(self,fhnd,date,subname,pollutant,mtrch,msurrch,mlatrch,mgwrch,mdgwrch,mflux):
+    def write_subrow(self,fhnd,date,subname,pollutant,mtrch,msurrch,mlatrch,mgwrch,mdgwrch,mflux,mocp):
         date = date.strftime("%Y-%m-%d")
-        row = f"{date},{subname},{pollutant},{mtrch},{msurrch},{mlatrch},{mgwrch},{mdgwrch},{mflux}\n"
+        row = f"{date},{subname},{pollutant},{mtrch},{msurrch},{mlatrch},{mgwrch},{mdgwrch},{mflux},{mocp}\n"
         fhnd.write(row)
 
     def write_subheader(self,fhnd):
-        headers = ",".join(["DATE","SUB","POLLUTANT","MTkg","MSURkg","MLATkg","MGWkg","MDGWkg","MFLUXkg"]) + "\n"
+        headers = ",".join(["DATE","SUB","POLLUTANT","MTkg","MSURkg","MLATkg","MGWkg","MDGWkg","MFLUXkg","MOCPkg"]) + "\n"
         fhnd.write(headers)
 
 

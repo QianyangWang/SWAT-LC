@@ -1,11 +1,10 @@
 import glob
-
 import pandas as pd
 import geopandas as gpd
 import resultreader
 import numpy as np
 import swat_param
-
+from swat_res import SWATreader
 
 def lcsubout2shp(tarshp,subout):
     shp = gpd.read_file(tarshp)
@@ -19,6 +18,7 @@ def lcsubout2shp(tarshp,subout):
         lat_ratio = []
         gw_ratio = []
         flux_ratio = []
+        ocp_ratio = []
         for id,s in enumerate(subs):
             total = lcres.inquireDataItem(s,p,"MTkg")
             sur = lcres.inquireDataItem(s, p, "MSURkg")
@@ -27,21 +27,25 @@ def lcsubout2shp(tarshp,subout):
             dgw = lcres.inquireDataItem(s, p, "MDGWkg")
             allgw = sgw + dgw
             flux = lcres.inquireDataItem(s, p, "MFLUXkg")
+            ocp = lcres.inquireDataItem(s, p, "MOCPkg")
             s_total = np.sum(total)
             s_sur = np.sum(sur)
             s_lat = np.sum(lat)
             s_gw = np.sum(allgw)
+            s_ocp = np.sum(ocp)
             s_flux = np.sum(flux)
             r_sur = s_sur/s_total
             r_lat = s_lat/s_total
             r_gw = s_gw/s_total
             r_flux = s_flux/s_total
+            r_ocp = s_ocp/s_total
             lpa = 1000000 * np.average(total) / areas[id]
 
             sur_ratio.append(r_sur)
             lat_ratio.append(r_lat)
             gw_ratio.append(r_gw)
             flux_ratio.append(r_flux)
+            ocp_ratio.append(r_ocp)
             loadpa.append(lpa)
 
         shp[r"LPA_{}".format(p)] = loadpa
@@ -49,13 +53,15 @@ def lcsubout2shp(tarshp,subout):
         shp["rLat_{}".format(p)] = lat_ratio
         shp["rGw_{}".format(p)] = gw_ratio
         shp["rFlx_{}".format(p)] = flux_ratio
+        shp["rOCP_{}".format(p)] = ocp_ratio
     shp.to_file(tarshp)
+
 
 def waspconc2shp(tarshp,waspout):
     df = pd.read_csv(waspout,index_col=0)
     shp = gpd.read_file(tarshp)
     reachid = shp["Subbasin"].values
-    polluts = ["CHR","NAP"]
+    polluts = ["C4PHE","C4DBT"]
     for ip,p in enumerate(polluts):
         concs = []
         stds = []
@@ -118,3 +124,23 @@ def lcsoilini2shp(tarshp,swatdir,lcdir):
         shp["{}_ngg".format(p[0:3])] = converted
     shp.to_file(tarshp)
 
+def visualize_tcf(swatdir):
+    reader = SWATreader(swatdir)
+    tmpdf = reader.read_TMP()  # read the temperature file, currently using the observed temperature
+    print(tmpdf)
+    degree = np.array(tmpdf["AvgTmp"] - 273.15).reshape(-1,1)
+    tcfs = []
+    for t in tmpdf["AvgTmp"]:
+        tcf = np.exp(60000/8.314 * (1/278.15 - 1/t))
+        tcfs.append(tcf)
+    tcfs = np.array(tcfs).reshape(-1,1)
+    print(degree.shape,tcfs.shape)
+    arr = np.concatenate([degree,tcfs],axis=1)
+    df = pd.DataFrame(arr)
+    df["Date"] = tmpdf["Date"]
+    df.to_excel(r"TFC.xlsx")
+
+
+#visualize_tcf(r"D:\SWATcalibration\process_swat2022")
+#waspconc2shp(r"D:\SWAT_LC_CN\resultshp\ocp\riv1.shp",r"D:\SWAT2WASP_C4\AllreachC4PHEDBT.csv")
+#lcsubout2shp(r"D:\SWAT_LC_CN\resultshp\ocp\subsphedbt.shp",r"D:\SWAT_LC_C4_m\lcproj.subout")

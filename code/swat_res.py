@@ -350,7 +350,6 @@ class SWATreader():
             dat.columns = columns
             step = {'0': 'M', '1': 'D', '2': 'A'}
 
-
             date_index = pd.date_range(self.output_start_date, self.output_end_date, freq=step[self.cio['IPRINT']])
             nhrus = len(set(dat["GIS"]))
             dat.index = np.repeat(date_index, nhrus)
@@ -451,7 +450,25 @@ class SWATreader():
             return np.array(res)
 
 
-
-
+    def read_TMP(self):
+        fpath = os.path.join(self.TxtInOut, 'Tmp1.Tmp')
+        with open(fpath) as f:
+            data = f.readlines()[4:]
+            dataseries = []
+            tempseries = []
+            for r in data:
+                date = r[0:7]
+                tmps = [float(r[7+i*5:7+(i+1)*5]) for i in range(int(len(r[7:-1])/5))]
+                dataseries.append(date)
+                tempseries.append(tmps)
+            dataseries = pd.Series(dataseries)
+            tempseries = pd.DataFrame(np.array(tempseries))  # C to K
+            tempseries.replace(-99.0, np.nan)
+            tempdf = tempseries.mean(axis=1, skipna=True)  # axis=1表示按行计算
+            tempdf += 273.15
+            resdf = pd.concat([dataseries,tempdf],axis=1)
+            resdf.columns = ["Date","AvgTmp"]
+            resdf['Date'] = pd.to_datetime(resdf['Date'], format='%Y%j')
+        return resdf
 
 
