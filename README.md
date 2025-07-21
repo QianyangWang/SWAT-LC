@@ -1,6 +1,6 @@
 # SWAT-LC
 
-<img src="https://img.shields.io/badge/Version-1.0-brightgreen" /><img src="https://img.shields.io/badge/Language-Python-blue" />	
+<img src="https://img.shields.io/badge/Version-1.1-brightgreen" /><img src="https://img.shields.io/badge/Language-Python-blue" />	
 
 ## Introduction
 
@@ -16,6 +16,8 @@ The SWAT-LC model reads the input variables (HRU and river features, HRU water y
 ## Major Governing Processes
 
 SWAT-LC incorporates four primary storage layers: surface storage, soil storage, shallow groundwater storage, and deep groundwater storage. In each independent Hydrological Response Unit (HRU), the concentration of PACs is assumed to be homogeneously distributed across these layers. In the surface layer, PACs can accumulate during dry periods. Conversely, during wet days, wash-off processes occur, leading to the movement of PACs. This flux is divided into horizontal wash-off—where PACs move with surface runoff into the river—and vertical wash-off—where PACs leach into the soil layer. Within the soil layer, three-phase partitioning equations (Du et al. 2019; Han et al. 2022) are employed to calculate the concentration of PACs in dissolved, solid, and DOC-adsorbed phases. PACs can then either migrate to the river through lateral flow or infiltrate into the aquifer via percolation. In the groundwater storage layer, PACs can contribute to riverine flows through baseflow, further influencing their concentration in surface waters.
+
+Specifically for the Athabasca oilsands region, in which the petrogenic source is dominating the total PAH in water, the outcrop erosion equation was developed based on the modified rating curve method governed by both the flowrate and min/max air temperature.
 <div align="center">
 <img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
 </div>
@@ -39,12 +41,12 @@ The major steps to prepare a SWAT-LC simulation include:
    | *.sol                 | txt    | Soil (DOC parameters) definition file.                       |
    | *.lu                  | txt    | Land use (build-up wash-off parameters) definition file.     |
    | *.init                | txt    | Soil initial condition (concentration) setting file.         |
+   | *.ocp (optional)      | txt    | Outcrops erosion parameter file.                             |
    | *.conflict (optional) | txt    | Soil and land use conflict definition file (to resolve the overlap issues between the soil map and land use, generally occurs on water bodies) |
    | *.usrflux (optional)  | txt    | Local settings of the direct flux (e.g. air depositions) into the river, which has a higher priority than the global parameter. |
    | *.usrlu (optional)    | txt    | Local settings of the build-up and wash-off parameters.      |
    | *.usrinit (optional)  | txt    | Local settings of the soil initial concentration.            |
-
-3. Define your SWAT-LC project folder and run the "main.py".
+4. Define your SWAT-LC project folder and run the "main.py".
 
    ```python
    if __name__ == "__main__": 	
@@ -59,9 +61,10 @@ The major steps to prepare a SWAT-LC simulation include:
    <img src="pics\ModelRun.png" alt="ModelRun" style="zoom: 67%;" width="700" />
    </div>
 
-4. Use the "resultreader.py" to convert the SWAT-LC results into WASP8 external database.
+5. Use the "resultreader.py" to convert the SWAT-LC results into WASP8 external database (xlsx/MySQL).
 
    ```python
+   # e.g. xlsx format
    # if dirtectly run the script
    lc = LCreader(r"D:\SWAT_LC\lcproj.subout")
    lc.toWASP8db(path=r"D:\SWAT2WASP\SWATLC_WASPDB.xlsx")
