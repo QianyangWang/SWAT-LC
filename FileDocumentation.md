@@ -91,7 +91,7 @@ This file is used to set the outcrop erosion equation parameters. It has a txt f
 | EA          | float  | J/(mol·K)| Activation energy for specific PAC.                |
 | T0          | float  | K    | Reference temperature.                             |
 
-## 6. Soil-Land Use Conflict Setting File (*.conflict, Optional)
+## 7. Soil-Land Use Conflict Setting File (*.conflict, Optional)
 
 This file is an optional setting file to inform the model of the potential conflicts between the SWAT soil map and land use data. For example, if the soil map has a "Water Body" type, while the land use map has a different type on the same location due to the differences (resolution etc.) between the data sources. This conflict caused by the water body may cause calculation mistakes. Therefore, we provide this file to reset the patches with conflicts. It has a txt format (comma separated) with four columns.
 
@@ -110,7 +110,7 @@ Example:
 
 In this example, the land use types of HRUs with a "WATER" soil type will be considered as the new land use (WATR) regardless of what their original land uses are.
 
-## 7. User Defined River Direct Flux (*.usrflux, Optional)
+## 8. User Defined River Direct Flux (*.usrflux, Optional)
 
 This file is used when the local settings of the direct flux accepted by the river are desired. It can be used to represent the spatial variability of the dry and wet depositions. It has a txt format (comma separated) with four columns.
 
@@ -121,7 +121,7 @@ This file is used when the local settings of the direct flux accepted by the riv
 | cprep       | float  | ng/L       | Concentration in precipitation                  |
 | riverflux   | float  | ug/(m2*yr) | Routine flux into accepted by the water surface |
 
-## 8. User Defined Land Use Setting File (*.usrlu, Optional)
+## 9. User Defined Land Use Setting File (*.usrlu, Optional)
 
 This file is used when the local settings of the land use parameters are desired. The consideration of the local effect can either be sub-basin scale or HRU scale, depending on the given control type (**CTLTYPE**). It has a txt format (comma separated) with ten columns.
 
@@ -138,7 +138,7 @@ This file is used when the local settings of the land use parameters are desired
 | kwoh        | -      | -    | -                                                            |
 | nwoh        | -      | -    | -                                                            |
 
-## 9. User Defined Soil Initial Conditions (*.usrinit, Optional)
+## 10. User Defined Soil Initial Conditions (*.usrinit, Optional)
 
 This file is used when the local settings of the soil initial conditions are desired.
 
