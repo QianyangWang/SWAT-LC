@@ -4,6 +4,7 @@
 <div align="center">
 <img src="pics\ConceptualGraph.jpg" alt="ModelStructure" style="zoom: 50%;" width="500" />
 </div>
+
 ## Introduction
 
 Characterized by complex behaviors in the environment, the mechanism-based simulation of Polycyclic Aromatic Compounds (PACs) at a basin scale presents significant challenges, underscoring the need for more accessible tools. This code repository introduces a Python extension called “SWAT-LC” (SWAT-Load Calculator), designed specifically based on the SWAT hydrologic model architecture for this purpose. SWAT-LC describes the terrestrial fate and transport processes of PACs for each Hydrological Response Unit (HRU) and sub-basin through a series of build-up, wash-off, partitioning, and decay equations. Using the PACs load calculated by SWAT-LC in conjunction with flow generation simulation results from SWAT, the concentration of PACs in the river can then be modeled using WASP8. Leveraging this extension alongside the SWAT2WASP toolkit (https://github.com/QianyangWang/SWAT2WASP), users can establish a more integrated SWAT—SWAT-LC—WASP8 modeling framework with greater ease. This code repository is a part of the work presented in the paper entitled “Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin: Integrated Models and Insights”. The architecture of the SWAT—SWAT-LC—WASP8 modeling framework is as follows:
@@ -94,4 +95,5 @@ The Athabasca River SWAT model for the testing purpose can be found at https://z
 ## How to Cite
 
 Wang, Q., Arlos, M., Wang, J., and Hicks, K.: Integrated Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin, EGU General Assembly 2025, Vienna, Austria, 27 Apr–2 May 2025, EGU25-10736, https://doi.org/10.5194/egusphere-egu25-10736, 2025.
+
 
