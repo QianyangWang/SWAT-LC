@@ -24,6 +24,7 @@ class PROJmanager:
         self.settings = {}
         self.glbparam = {}
         self.scan_swat_settings()
+        self.scan_swat_glbparams()
         self.sublist = []
         self.scan_sub()
         self.load_swat_result()  # input series for the SWAT_LC
@@ -56,7 +57,7 @@ class PROJmanager:
         self.settings["IDAL"] = cio.parameters["IDAL"]
         self.settings["NYSKIP"] = cio.parameters["NYSKIP"]
 
-    def scan_swan_glbparams(self):
+    def scan_swat_glbparams(self):
         print("Scanning SWAT global parameters...")
         bsn = ParamIO("basins.bsn")
         self.glbparam["SURLAG"] = bsn.parameters["SURLAG"]
@@ -726,6 +727,8 @@ class StateVariables:
 
 
 
-
+"""
+scanner = PROJmanager(r"D:\SWATcalibration\process_swat2022",r"D:\SWAT_LC_C4")
+"""
 
 
