@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/Version-1.1-brightgreen" /><img src="https://img.shields.io/badge/Language-Python-blue" />
 <div align="center">
-<img src="pics\ConceptualGraph.jpg" alt="ModelStructure" style="zoom: 50%;" width="500" />
+<img src="pics\ConceptualGraph.jpg" alt="ConceptualGraph" style="zoom: 50%;" width="500" />
 </div>
 
 ## Introduction
@@ -27,8 +27,9 @@ Specifically for the Athabasca oilsands region, in which the petrogenic source i
 
 ## Model Coupling Process
 
+SWAT-LC scans the SWAT project folder structure and extracts relevant parameters and variables for each “SUBBASIN” and “HRU” object, managed by the “PROJmanager”. Each object has an independent “StateVariable” attribute to track process variables during DOC/PAC simulations. Subsequently, sub-basin level results from SWAT-LC can be exported to spreadsheets or MySQL for external databases that can be directly fed into WASP8.
 <div align="center">
-<img src="pics\IOplot.jpg.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
+<img src="pics\IOplot.jpg" alt="IOplot" style="zoom: 67%;" width="600" />
 </div>
 
 ## Dependencies
@@ -95,5 +96,6 @@ The Athabasca River SWAT model for the testing purpose can be found at https://z
 ## How to Cite
 
 Wang, Q., Arlos, M., Wang, J., and Hicks, K.: Integrated Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin, EGU General Assembly 2025, Vienna, Austria, 27 Apr–2 May 2025, EGU25-10736, https://doi.org/10.5194/egusphere-egu25-10736, 2025.
+
 
 
