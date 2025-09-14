@@ -1,7 +1,9 @@
 # SWAT-LC
 
-<img src="https://img.shields.io/badge/Version-1.1-brightgreen" /><img src="https://img.shields.io/badge/Language-Python-blue" />	
-
+<img src="https://img.shields.io/badge/Version-1.1-brightgreen" /><img src="https://img.shields.io/badge/Language-Python-blue" />
+<div align="center">
+<img src="pics\ConceptualGraph.jpg" alt="ModelStructure" style="zoom: 50%;" width="500" />
+</div>
 ## Introduction
 
 Characterized by complex behaviors in the environment, the mechanism-based simulation of Polycyclic Aromatic Compounds (PACs) at a basin scale presents significant challenges, underscoring the need for more accessible tools. This code repository introduces a Python extension called “SWAT-LC” (SWAT-Load Calculator), designed specifically based on the SWAT hydrologic model architecture for this purpose. SWAT-LC describes the terrestrial fate and transport processes of PACs for each Hydrological Response Unit (HRU) and sub-basin through a series of build-up, wash-off, partitioning, and decay equations. Using the PACs load calculated by SWAT-LC in conjunction with flow generation simulation results from SWAT, the concentration of PACs in the river can then be modeled using WASP8. Leveraging this extension alongside the SWAT2WASP toolkit (https://github.com/QianyangWang/SWAT2WASP), users can establish a more integrated SWAT—SWAT-LC—WASP8 modeling framework with greater ease. This code repository is a part of the work presented in the paper entitled “Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin: Integrated Models and Insights”. The architecture of the SWAT—SWAT-LC—WASP8 modeling framework is as follows:
@@ -20,6 +22,12 @@ SWAT-LC incorporates four primary storage layers: surface storage, soil storage,
 Specifically for the Athabasca oilsands region, in which the petrogenic source is dominating the total PAH in water, the bitumen outcrop erosion equation was developed based on the modified rating curve method governed by both the flowrate/river width and min & max air temperature.
 <div align="center">
 <img src="pics\SWATLCprocesses.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
+</div>
+
+## Model Coupling Process
+
+<div align="center">
+<img src="pics\IOplot.jpg.jpg" alt="SWATLCprocesses" style="zoom: 67%;" width="600" />
 </div>
 
 ## Dependencies
@@ -86,3 +94,4 @@ The Athabasca River SWAT model for the testing purpose can be found at https://z
 ## How to Cite
 
 Wang, Q., Arlos, M., Wang, J., and Hicks, K.: Integrated Simulation of Polycyclic Aromatic Compounds in the Athabasca River Basin, EGU General Assembly 2025, Vienna, Austria, 27 Apr–2 May 2025, EGU25-10736, https://doi.org/10.5194/egusphere-egu25-10736, 2025.
+
